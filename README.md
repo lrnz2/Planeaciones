@@ -8,4 +8,4 @@ El sistema ha sido creado usando Clean Architecture.
 
 # Puesta en marcha
 Para inicializar el servidor de desarrollo utilice el comando: 
-      python3 manage.py runserver
+            python3 manage.py runserver
