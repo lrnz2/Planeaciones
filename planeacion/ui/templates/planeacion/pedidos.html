@@ -1,0 +1,352 @@
+{% extends 'planeacion/base/base_site.html' %}
+
+{% block main_content %}
+  <h2>Pedidos </h2>
+  <div class="d-flex justify-content-between mt-4 mb-4">
+    <div>
+      <button 
+      class="btn btn-success"
+      data-bs-toggle="modal"
+      data-bs-target="#crear-pedido-modal"
+      > + Agregar Nuevo</button>
+    </div>
+    {% if mensaje %}
+      <div class="ms-auto me-auto">
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        {% else %}
+        <div class="alert alert-success alert-dismissible fade show mb-0" role="alert">
+        {% endif %}
+          <strong>{{mensaje}}</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endif %}
+    
+  </div>
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Cliente</th>
+        <th scope="col">Producto Sku</th>
+        <th scope="col">Cantidad</th>
+        <th scope="col">Ubicación</th>
+        <th scope="col">Zona</th>
+        <th scope="col">Type</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if pedidos %}
+        {% for pedido in pedidos %}
+          <tr>
+            <td>{{ pedido.id }}</td>
+            <td>{{ pedido.cliente.nombre }}</td>
+            <td>{{ pedido.producto.sku }}</td>
+            <td>{{ pedido.cantidad }}</td>
+            <td>{{ pedido.ubicacion }}</td>
+            <td>{{ pedido.zona }}</td>
+            <td>{{ pedido.type }}</td>
+            <td>
+              <div class="d-flex flex-row justify-content-center">
+                <button class="btn btn-warning me-2" 
+                data-bs-toggle="modal" 
+                data-bs-target="#editar-pedido-modal"
+                data-bs-id="{{pedido.id}}"
+                data-bs-cliente-id="{{ pedido.cliente.id }}"
+                data-bs-producto-sku="{{pedido.producto.sku}}" 
+                data-bs-cantidad="{{pedido.cantidad}}"
+                data-bs-ubicacion="{{ pedido.ubicacion }}"
+                data-bs-zona="{{pedido.zona}}" 
+                data-bs-type="{{pedido.type}}" 
+                >Editar</button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar-pedido-modal" data-bs-id="{{pedido.id}}">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center">
+            <h5>No hay pedidos registrados</h5>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+{% endblock %}
+
+{% block modals %}
+
+<!-- Modal agregar nuevo pedido-->
+<div class="modal fade" novalidate id="crear-pedido-modal" tabindex="-1" aria-labelledby="crear-pedido-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="crear-pedido-modal-label">Registrar nuevo pedido</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'crear-pedido' %}" method="post" id="crear-pedido-form" class="row g-3 needs-validation"  novalidate>
+          {% csrf_token %}
+          <fieldset>
+            <div>
+              <label for="#clientes-form-select" class="form-label">Cliente:</label>
+              <select name="cliente-id" id="clientes-form-select" class="form-select">
+                <option value="" selected disabled>Seleccione cliente</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}">{{ cliente.id }} - {{ cliente.nombre }}</option>
+                {% endfor %}
+                <option >
+                  <a href="{% url 'clientes'%}">+ Registrar nuevo cliente hh</a>
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label for="#productos-form-select" class="form-label">Producto:</label>
+              <select name="producto-sku" id="productos-form-select" class="form-select">
+                <option value="" selected disabled>Seleccione producto</option>
+                {% for producto in productos %}
+                    <option value="{{ producto.sku }}">sku: {{ producto.sku }}</option>
+                {% endfor %}
+                <option >
+                  <a href="{% url 'productos'%}">
+                    <button>+ Registrar nuevo producto</button>
+                  </a>
+                </option>
+              </select>
+            </div>
+          <div>
+            <label for="#pedido-cantidad-input" class="form-label">Cantidad: </label>
+            <input name="cantidad" type="text" class="form-control" id="pedido-cantidad-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue una cantidad válido
+            </div>
+          </div>
+          <div>
+            <label for="#pedido-ubicacion-input" class="form-label">Ubicación: </label>
+            <input name="ubicacion" type="text" class="form-control" id="pedido-ubicacion-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue una ubicación válida
+            </div>
+          </div>
+          <div>
+            <label for="#pedido-zona-input" class="form-label">Zona: </label>
+            <input name="zona" type="text" class="form-control" id="pedido-zona-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue un numero de zona válido
+            </div>
+          </div>
+          <div>
+            <label for="#types-form-select" class="form-label">Type: </label>
+            <select name="type" id="types-form-select" class="form-select">
+              <option value="" selected disabled>Seleccione tipo</option>
+              <option value="Master">Master</option>
+              <option value="Piezas">Piezas</option>
+              <option value="Kg">Kg</option>
+            </select>
+          </div>
+        </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="crear-pedido-form" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar pedido-->
+<div class="modal fade" id="editar-pedido-modal" tabindex="-1" aria-labelledby="editar-pedido-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="editar-pedido-modal-label">Editar datos del pedido</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p>Id: <strong id="pedido-id-label"> </strong></p>
+        </div>
+        <form action="{% url 'actualizar-pedido' %}" method="post" id="editar-pedido-form" class="row g-3">
+          {% csrf_token %}
+          <fieldset>
+            <input type="hidden" name="id" value="" id="pedido-id-input">
+            <div>
+              <label for="#clientes-form-select" class="form-label">Cliente:</label>
+              <select name="cliente-id" id="clientes-form-select" class="form-select">
+                <option value="" selected disabled>Seleccione cliente</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}">{{ cliente.id }} - {{ cliente.nombre }}</option>
+                {% endfor %}
+                <option >
+                  <a class="btn btn-primary" href="{% url 'clientes'%}">+ Registrar nuevo cliente</a>
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label for="#productos-form-select" class="form-label">Producto:</label>
+              <select name="producto-sku" id="productos-form-select" class="form-select">
+                <option value="" selected disabled>Seleccione producto</option>
+                {% for producto in productos %}
+                    <option value="{{ producto.sku }}">sku: {{ producto.sku }}</option>
+                {% endfor %}
+                <option >
+                  <a href="{% url 'productos'%}">
+                    <button>+ Registrar nuevo producto</button>
+                  </a>
+                </option>
+              </select>
+            </div>
+          <div>
+            <label for="#pedido-cantidad-input" class="form-label">Cantidad: </label>
+            <input name="cantidad" type="text" class="form-control" id="pedido-cantidad-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue una cantidad válido
+            </div>
+          </div>
+          <div>
+            <label for="#pedido-ubicacion-input" class="form-label">Ubicación: </label>
+            <input name="ubicacion" type="text" class="form-control" id="pedido-ubicacion-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue una ubicación válida
+            </div>
+          </div>
+          <div>
+            <label for="#pedido-zona-input" class="form-label">Zona: </label>
+            <input name="zona" type="text" class="form-control" id="pedido-zona-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue un numero de zona válido
+            </div>
+          </div>
+          <div>
+            <label for="#types-form-select" class="form-label">Type:</label>
+            <select name="type" id="types-form-select" class="form-select">
+              <option value="" selected disabled>Seleccione tipo</option>
+              <option value="Master">Master</option>
+              <option value="Piezas">Piezas</option>
+              <option value="Kg">Kg</option>
+            </select>
+          </div>
+
+
+          </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="editar-pedido-form" class="btn btn-primary">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal eliminar pedido-->
+<div class="modal fade" id="eliminar-pedido-modal" tabindex="-1" aria-labelledby="eliminar-pedido-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="eliminar-pedido-modal-label">Eliminar pedido</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p>¿Desea <strong>eliminar</strong> el pedido? </p>
+        </div>
+        <form id="eliminar-pedido-form" action="{%url 'eliminar-pedido' %}" method="post" class="row g-3">
+          {% csrf_token %}
+          <input id="pedido-id-input" type="hidden" name="id" value="">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="eliminar-pedido-form" class="btn btn-primary">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock modals %}
+
+{% block scripts %}
+<script>
+  
+const editarPedidoModal = document.getElementById('editar-pedido-modal')
+if (editarPedidoModal) {
+  editarPedidoModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget
+    const pedidoId = button.getAttribute('data-bs-id')
+    const pedidoClienteId = button.getAttribute('data-bs-cliente-id')
+    const pedidoProductoSku = button.getAttribute('data-bs-producto-sku')
+    const pedidoCantidad = button.getAttribute('data-bs-cantidad')
+    const pedidoUbicacion = button.getAttribute('data-bs-ubicacion')
+    const pedidoZona = button.getAttribute('data-bs-zona')
+    const pedidoType = button.getAttribute('data-bs-type')
+    
+    const modalEditarPedidoIdLabel = editarPedidoModal.querySelector('#pedido-id-label')
+    const modalEditarPedidoIdInput = editarPedidoModal.querySelector('#pedido-id-input')
+    const modalEditarPedidoClienteId = editarPedidoModal.querySelector("#clientes-form-select")
+    const modalEditarPedidoProductoSku = editarPedidoModal.querySelector("#productos-form-select")
+    const modalEditarPedidoCantidad = editarPedidoModal.querySelector("#pedido-cantidad-input")
+    const modalEditarPedidoUbicacion = editarPedidoModal.querySelector("#pedido-ubicacion-input")
+    const modalEditarPedidoZona = editarPedidoModal.querySelector("#pedido-zona-input")
+    const modalEditarPedidoType = editarPedidoModal.querySelector("#types-form-select")
+
+    modalEditarPedidoIdLabel.textContent = pedidoId
+    modalEditarPedidoIdInput.value = pedidoId
+    modalEditarPedidoClienteId.value = pedidoClienteId
+    modalEditarPedidoProductoSku.value = pedidoProductoSku
+    modalEditarPedidoCantidad.value = pedidoCantidad
+    modalEditarPedidoUbicacion.value = pedidoUbicacion
+    modalEditarPedidoZona.value = pedidoZona
+    modalEditarPedidoType.value = pedidoType
+  })
+}
+
+const eliminarPedidoModal = document.getElementById("eliminar-pedido-modal")
+if(eliminarPedidoModal){
+  eliminarPedidoModal.addEventListener('show.bs.modal', event =>{
+    const button = event.relatedTarget
+
+    const pedidoId = button.getAttribute('data-bs-id')
+
+    const inputId = eliminarPedidoModal.querySelector('#pedido-id-input')
+    
+    inputId.value = pedidoId
+  })
+}
+
+(() => {
+  'use strict'
+
+  const forms = document.querySelectorAll('.needs-validation')
+
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+
+const sidebarMenu = document.getElementById("sidebar-menu")
+const dash = sidebarMenu.querySelector('#dash')
+const clientes = sidebarMenu.querySelector('#clientes')
+const pedidos = sidebarMenu.querySelector('#pedidos')
+const productos = sidebarMenu.querySelector('#productos')
+dash.classList.remove("active");
+clientes.classList.remove("active");
+pedidos.classList.add("active");
+productos.classList.remove("active");
+</script>
+{% endblock%}
+

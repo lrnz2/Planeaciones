@@ -1,0 +1,279 @@
+{% extends 'planeacion/base/base_site.html' %}
+
+{% block main_content %}
+  <h2>Ordenes de trabajo </h2>
+  <div class="d-flex justify-content-between mt-4 mb-4">
+    <div>
+      <button 
+      class="btn btn-success"
+      data-bs-toggle="modal"
+      data-bs-target="#crear-planeacion-modal"
+      > + Agregar Nuevo</button>
+    </div>
+    {% if mensaje %}
+      <div class="ms-auto me-auto">
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        {% else %}
+        <div class="alert alert-success alert-dismissible fade show mb-0" role="alert">
+        {% endif %}
+          <strong>{{mensaje}}</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endif %}
+    
+  </div>
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">Clave</th>
+        <th scope="col">Status</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if planeaciones %}
+        {% for planeacion in planeaciones %}
+          <tr>
+            <td>{{ planeacion.clave }}</td>
+            <td>{{ planeacion.status }}</td>
+            <td>
+              <div class="d-flex flex-row justify-content-center">
+                <button class="btn btn-warning me-2" 
+                data-bs-toggle="modal" 
+                data-bs-target="#editar-planeacion-modal"
+                data-bs-id="{{ planeacion.id }}"
+                data-bs-clave="{{ planeacion.clave }}"
+                data-bs-status="{{ planeacion.status }}">Editar Status</button>
+
+                <a class="btn btn-info me-2" href="{% url 'detalle-planeacion' planeacion.clave%}">Detalles</a>
+
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar-planeacion-modal" data-bs-id="{{planeacion.id}}">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center">
+            <h5>No hay planeaciones registrados</h5>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+{% endblock %}
+
+{% block modals %}
+
+<!-- Modal agregar nuevo planeacion-->
+<div class="modal fade" novalidate id="crear-planeacion-modal" tabindex="-1" aria-labelledby="crear-planeacion-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="crear-planeacion-modal-label">Registrar nueva planeación</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'crear-planeacion' %}" method="post" id="crear-planeacion-form" class="row g-3 needs-validation"  novalidate>
+          {% csrf_token %}
+          <fieldset>
+            <div>
+              <label for="#planeacion-clave-input" class="form-label">Clave: </label>
+              <input name="clave" type="text" class="form-control" id="planeacion-clave-input" value="" required >
+              <div class="invalid-feedback">
+                Agregue una clave válida
+              </div>
+            </div>
+            <div>
+              <label for="#status-form-select" class="form-label">Type: </label>
+              <select name="status" id="status-form-select" class="form-select" required>
+                <option value="" selected disabled>Seleccione status:</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En proceso">En proceso</option>
+                <option value="Entregado">Entregado</option>
+              </select>
+            </div>
+            <div>
+              <br>
+              <label for="flexCheckDefault">Seleccione pedidos:</label>
+              <table class="table table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Producto Sku</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Ubicación</th>
+                    <th scope="col">Zona</th>
+                    <th scope="col">Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if pedidos_sin_planeacion %}
+                    {% for pedido in pedidos_sin_planeacion %}
+                    <tr>
+                      <td>
+                        <div class="form-check">
+                          <input name = "pedidos" class="form-check-input" type="checkbox" value="{{pedido.id}}" id="flexCheckDefault">
+                          <label class="form-check-label" for="flexCheckDefault"></label>
+                        </div>
+                      </td>
+                      <td>{{ pedido.id }}</td>
+                      <td>{{ pedido.cliente.nombre }}</td>
+                      <td>{{ pedido.producto.sku }}</td>
+                      <td>{{ pedido.cantidad }}</td>
+                      <td>{{ pedido.ubicacion }}</td>
+                      <td>{{ pedido.zona }}</td>
+                      <td>{{ pedido.type }}</td>
+                      
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="8" class="text-center">
+                        <h5>No hay pedidos por asignar a planeación</h5>
+                      </td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            
+            </div>
+        </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="crear-planeacion-form" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar planeacion-->
+<div class="modal fade" id="editar-planeacion-modal" tabindex="-1" aria-labelledby="editar-planeacion-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="editar-planeacion-modal-label">Editar datos de planeación</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p>Clave: <strong id="planeacion-clave-label"> </strong></p>
+        </div>
+        <form action="{% url 'actualizar-planeacion' %}" method="post" id="editar-planeacion-form" class="row g-3">
+          {% csrf_token %}
+          <fieldset>
+            <input type="hidden" name="id" value="" id="planeacion-id-input" hidden>
+          <div>
+            <label for="#status-form-select" class="form-label">Type: </label>
+            <select name="status" id="status-form-select" class="form-select">
+              <option value="" selected disabled>Seleccione status:</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Entregado">Entregado</option>
+            </select>
+          </div>
+        </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="editar-planeacion-form" class="btn btn-primary">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal eliminar planeacion-->
+<div class="modal fade" id="eliminar-planeacion-modal" tabindex="-1" aria-labelledby="eliminar-planeacion-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="eliminar-planeacion-modal-label">Eliminar planeacion</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p> ¿Desea <strong>eliminar</strong> la planeacion? </p>
+        </div>
+        <form id="eliminar-planeacion-form" action="{%url 'eliminar-planeacion' %}" method="post" class="row g-3">
+          {% csrf_token %}
+          <input id="planeacion-id-input" type="hidden" name="id" value="">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="eliminar-planeacion-form" class="btn btn-primary">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock modals %}
+
+{% block scripts %}
+<script>
+  
+const editarProductoModal = document.getElementById('editar-planeacion-modal')
+if (editarProductoModal) {
+  editarProductoModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget
+    const planeacionId = button.getAttribute('data-bs-id')
+    const planeacionStatus = button.getAttribute('data-bs-status')
+    const planeacionClave = button.getAttribute('data-bs-clave')
+    
+    const modalEditarProductoIdInput = editarProductoModal.querySelector('#planeacion-id-input')
+    const modalEditarProductoClaveLabel = editarProductoModal.querySelector('#planeacion-clave-label')
+    const modalEditarProductoStatusSelect = editarProductoModal.querySelector('#status-form-select')
+
+    modalEditarProductoIdInput.value = planeacionId
+    modalEditarProductoClaveLabel.textContent = planeacionClave
+    modalEditarProductoStatusSelect.value = planeacionStatus
+  })
+}
+
+const eliminarProductoModal = document.getElementById("eliminar-planeacion-modal")
+if(eliminarProductoModal){
+  eliminarProductoModal.addEventListener('show.bs.modal', event =>{
+    const button = event.relatedTarget
+    const planeacionId = button.getAttribute('data-bs-id')
+    const inputId = eliminarProductoModal.querySelector('#planeacion-id-input')
+    inputId.value = planeacionId
+  })
+}
+
+(() => {
+  'use strict'
+
+  const forms = document.querySelectorAll('.needs-validation')
+
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+
+const sidebarMenu = document.getElementById("sidebar-menu")
+const dash = sidebarMenu.querySelector('#dash')
+const clientes = sidebarMenu.querySelector('#clientes')
+const pedidos = sidebarMenu.querySelector('#pedidos')
+const planeacions = sidebarMenu.querySelector('#planeacions')
+dash.classList.add("active");
+clientes.classList.remove("active");
+pedidos.classList.remove("active");
+planeacions.classList.remove("active");
+
+</script>
+{% endblock%}
+

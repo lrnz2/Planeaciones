@@ -1,0 +1,239 @@
+{% extends 'planeacion/base/base_site.html' %}
+
+{% block main_content %}
+  <h2>Productos </h2>
+  <div class="d-flex justify-content-between mt-4 mb-4">
+    <div>
+      <button 
+      class="btn btn-success"
+      data-bs-toggle="modal"
+      data-bs-target="#crear-producto-modal"
+      > + Agregar Nuevo</button>
+    </div>
+    {% if mensaje %}
+      <div class="ms-auto me-auto">
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        {% else %}
+        <div class="alert alert-success alert-dismissible fade show mb-0" role="alert">
+        {% endif %}
+          <strong>{{mensaje}}</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endif %}
+    
+  </div>
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">SKU</th>
+        <th scope="col">Pasillo</th>
+        <th scope="col">Precio</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if productos %}
+        {% for producto in productos %}
+          <tr>
+            <td>{{ producto.sku }}</td>
+            <td>{{ producto.pasillo }}</td>
+            <td>{{ producto.precio }}</td>
+            <td>
+              <div class="d-flex flex-row justify-content-center">
+                <button class="btn btn-warning me-2" 
+                data-bs-toggle="modal" 
+                data-bs-target="#editar-producto-modal"
+                data-bs-sku="{{producto.sku}}"
+                data-bs-pasillo="{{ producto.pasillo }}"
+                data-bs-precio="{{producto.precio}}" >Editar</button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar-producto-modal" data-bs-sku="{{producto.sku}}">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center">
+            <h5>No hay productos registrados</h5>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+{% endblock %}
+
+{% block modals %}
+
+<!-- Modal agregar nuevo producto-->
+<div class="modal fade" novalidate id="crear-producto-modal" tabindex="-1" aria-labelledby="crear-producto-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="crear-producto-modal-label">Registrar nuevo producto</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'crear-producto' %}" method="post" id="crear-producto-form" class="row g-3 needs-validation"  novalidate>
+          {% csrf_token %}
+          <fieldset>
+            <div>
+              <label for="#producto-sku-input" class="form-label">SKU: </label>
+              <input name="sku" type="number" class="form-control" id="producto-sku-input" value="" required >
+              <div class="invalid-feedback">
+                Agregue un numero de sku válido
+              </div>
+            </div>
+            <div>
+              <label for="#producto-pasillo-input" class="form-label">Pasillo: </label>
+              <input name="pasillo" type="number" class="form-control" id="producto-pasillo-input" value="" required >
+              <div class="invalid-feedback">
+                Agregue un numero de pasillo válido
+              </div>
+            </div>
+          <div>
+            <label for="#producto-precio-input" class="form-label">Precio: </label>
+            <input name="precio" type="number" step=".01" class="form-control" id="producto-precio-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue un precio válidos
+            </div>
+          </div>
+        </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="crear-producto-form" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar producto-->
+<div class="modal fade" id="editar-producto-modal" tabindex="-1" aria-labelledby="editar-producto-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="editar-producto-modal-label">Editar datos del producto</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p>Id: <strong id="producto-sku-label"> </strong></p>
+        </div>
+        <form action="{% url 'actualizar-producto' %}" method="post" id="editar-producto-form" class="row g-3">
+          {% csrf_token %}
+          <fieldset>
+            <input type="hidden" name="sku" value="" id="producto-sku-input" hidden>
+          <div>
+            <label for="#producto-pasillo-input" class="form-label">Pasillo: </label>
+            <input name="pasillo" type="number" class="form-control" id="producto-pasillo-input" value="" required >
+          </div>
+          <div>
+            <label for="#producto-precio-input" class="form-label">Precio: </label>
+            <input name="precio" type="number" step=".01" class="form-control" id="producto-precio-input" value="" required >
+
+          </div>
+        </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="editar-producto-form" class="btn btn-primary">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal eliminar producto-->
+<div class="modal fade" id="eliminar-producto-modal" tabindex="-1" aria-labelledby="eliminar-producto-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="eliminar-producto-modal-label">Eliminar producto</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p> ¿Desea <strong>eliminar</strong> el producto? </p>
+        </div>
+        <form id="eliminar-producto-form" action="{%url 'eliminar-producto' %}" method="post" class="row g-3">
+          {% csrf_token %}
+          <input id="producto-sku-input" type="hidden" name="sku" value="">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="eliminar-producto-form" class="btn btn-primary">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock modals %}
+
+{% block scripts %}
+<script>
+  
+const editarProductoModal = document.getElementById('editar-producto-modal')
+if (editarProductoModal) {
+  editarProductoModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget
+    const productoSku = button.getAttribute('data-bs-sku')
+    const productoPasillo = button.getAttribute('data-bs-pasillo')
+    const productoPrecio = button.getAttribute('data-bs-precio')
+    
+    const modalEditarProductoSku = editarProductoModal.querySelector('#producto-sku-label')
+    const modalEditarProductoSkuInput = editarProductoModal.querySelector('#producto-sku-input')
+    const modalEditarProductoPasillo = editarProductoModal.querySelector("#producto-pasillo-input")
+    const modalEditarProductoPrecio = editarProductoModal.querySelector("#producto-precio-input")
+
+    modalEditarProductoSkuInput.value = productoSku
+    modalEditarProductoSku.textContent = productoSku
+    modalEditarProductoPasillo.value = productoPasillo
+    modalEditarProductoPrecio.value = productoPrecio
+  })
+}
+
+const eliminarProductoModal = document.getElementById("eliminar-producto-modal")
+if(eliminarProductoModal){
+  eliminarProductoModal.addEventListener('show.bs.modal', event =>{
+    const button = event.relatedTarget
+    const productoSku = button.getAttribute('data-bs-sku')
+    const inputSku = eliminarProductoModal.querySelector('#producto-sku-input')
+    inputSku.value = productoSku
+  })
+}
+
+(() => {
+  'use strict'
+
+  const forms = document.querySelectorAll('.needs-validation')
+
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+
+const sidebarMenu = document.getElementById("sidebar-menu")
+const dash = sidebarMenu.querySelector('#dash')
+const clientes = sidebarMenu.querySelector('#clientes')
+const pedidos = sidebarMenu.querySelector('#pedidos')
+const productos = sidebarMenu.querySelector('#productos')
+dash.classList.remove("active");
+clientes.classList.remove("active");
+pedidos.classList.remove("active");
+productos.classList.add("active");
+
+</script>
+{% endblock%}
+

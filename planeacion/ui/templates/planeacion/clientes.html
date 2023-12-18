@@ -1,0 +1,233 @@
+{% extends 'planeacion/base/base_site.html' %}
+
+{% block main_content %}
+  <h2>Clientes </h2>
+  <div class="d-flex justify-content-between mt-4 mb-4">
+    <div>
+      <button 
+      class="btn btn-success"
+      data-bs-toggle="modal"
+      data-bs-target="#crear-cliente-modal"
+      > + Agregar Nuevo</button>
+    </div>
+    {% if mensaje %}
+      <div class="ms-auto me-auto">
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        {% else %}
+        <div class="alert alert-success alert-dismissible fade show mb-0" role="alert">
+        {% endif %}
+          <strong>{{mensaje}}</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endif %}
+    
+  </div>
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Nombre</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if clientes %}
+        {% for cliente in clientes %}
+          <tr>
+            <td>{{ cliente.id }}</td>
+            <td>{{ cliente.nombre }}</td>
+            <td>
+              <div class="d-flex flex-row justify-content-center">
+                <button class="btn btn-warning me-2" 
+                data-bs-toggle="modal" 
+                data-bs-target="#editar-cliente-modal"
+                data-bs-id="{{cliente.id}}"
+                data-bs-nombre="{{ cliente.nombre }}"
+                data-bs-apellidos="{{cliente.apellidos}}" >Editar</button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminar-cliente-modal" data-bs-id="{{cliente.id}}">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center">
+            <h5>No hay clientes registrados</h5>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+{% endblock %}
+
+{% block modals %}
+
+<!-- Modal agregar nuevo cliente-->
+<div class="modal fade" novalidate id="crear-cliente-modal" tabindex="-1" aria-labelledby="crear-cliente-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="crear-cliente-modal-label">Registrar nuevo cliente</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'crear-cliente' %}" method="post" id="crear-cliente-form" class="row g-3 needs-validation"  novalidate>
+          {% csrf_token %}
+          <fieldset>
+          <div>
+            <label for="#cliente-nombre-input" class="form-label">Nombre: </label>
+            <input name="nombre" type="text" class="form-control" id="cliente-nombre-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue un nombre válido
+            </div>
+          </div>
+          <div>
+            <label for="#cliente-apellidos-input" class="form-label">Apellidos: </label>
+            <input name="apellidos" type="text" class="form-control" id="cliente-apellidos-input" value="" required >
+            <div class="invalid-feedback">
+              Agregue apellidos válidos
+            </div>
+          </div>
+        </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="crear-cliente-form" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar cliente-->
+<div class="modal fade" id="editar-cliente-modal" tabindex="-1" aria-labelledby="editar-cliente-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="editar-cliente-modal-label">Editar datos del cliente</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p>Id: <strong id="cliente-id-label"> </strong></p>
+        </div>
+        <form action="{% url 'actualizar-cliente' %}" method="post" id="editar-cliente-form" class="row g-3">
+          {% csrf_token %}
+          <fieldset>
+            <input type="hidden" name="id" value="" id="cliente-id-input">
+          <div>
+            <label for="#cliente-nombre-input" class="form-label">Nombre: </label>
+            <input name="nombre" type="text" class="form-control" id="cliente-nombre-input" value="" required >
+          </div>
+          <div>
+            <label for="#cliente-apellidos-input" class="form-label">Apellidos: </label>
+            <input name="apellidos" type="text" class="form-control" id="cliente-apellidos-input" value="" required >
+
+          </div>
+        </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="editar-cliente-form" class="btn btn-primary">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal eliminar cliente-->
+<div class="modal fade" id="eliminar-cliente-modal" tabindex="-1" aria-labelledby="eliminar-cliente-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="eliminar-cliente-modal-label">Eliminar cliente</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <p> ¿Desea <strong>eliminar</strong> los registros del cliente? </p>
+        </div>
+        <form id="eliminar-cliente-form" action="{%url 'eliminar-cliente' %}" method="post" class="row g-3">
+          {% csrf_token %}
+          <input id="cliente-id-input" type="hidden" name="id" value="">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="eliminar-cliente-form" class="btn btn-primary">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock modals %}
+
+{% block scripts %}
+<script>
+  
+const editarClienteModal = document.getElementById('editar-cliente-modal')
+if (editarClienteModal) {
+  editarClienteModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget
+    const clienteId = button.getAttribute('data-bs-id')
+    const clienteNombre = button.getAttribute('data-bs-nombre')
+    const clienteApellidos = button.getAttribute('data-bs-apellidos')
+    
+    const modalEditarClienteId = editarClienteModal.querySelector('#cliente-id-label')
+    const modalEditarClienteIdInput = editarClienteModal.querySelector('#cliente-id-input')
+    const modalEditarClienteNombre = editarClienteModal.querySelector("#cliente-nombre-input")
+    const modalEditarClienteApellidos = editarClienteModal.querySelector("#cliente-apellidos-input")
+
+    modalEditarClienteIdInput.value = clienteId
+    modalEditarClienteId.textContent = clienteId
+    modalEditarClienteNombre.value = clienteNombre
+    modalEditarClienteApellidos.value = clienteApellidos
+  })
+}
+
+const eliminarClienteModal = document.getElementById("eliminar-cliente-modal")
+if(eliminarClienteModal){
+  eliminarClienteModal.addEventListener('show.bs.modal', event =>{
+    const button = event.relatedTarget
+
+    const clienteId = button.getAttribute('data-bs-id')
+
+    const inputId = eliminarClienteModal.querySelector('#cliente-id-input')
+    
+    inputId.value = clienteId
+  })
+}
+
+(() => {
+  'use strict'
+
+  const forms = document.querySelectorAll('.needs-validation')
+
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+
+const sidebarMenu = document.getElementById("sidebar-menu")
+const dash = sidebarMenu.querySelector('#dash')
+const clientes = sidebarMenu.querySelector('#clientes')
+const pedidos = sidebarMenu.querySelector('#pedidos')
+const productos = sidebarMenu.querySelector('#productos')
+dash.classList.remove("active");
+clientes.classList.add("active");
+pedidos.classList.remove("active");
+productos.classList.remove("active");
+
+</script>
+{% endblock%}
+

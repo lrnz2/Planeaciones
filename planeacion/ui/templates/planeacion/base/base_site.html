@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" style="min-height:100vh; min-height: -webkit-fill-available;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}
+        Planeación
+      {% endblock %}
+    </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+  </head>
+
+  <body style="min-height:100vh; min-height: -webkit-fill-available;">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-2 p-0">
+          <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark" style="width:auto; min-height: 100vh;">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+              <span class="fs-4">Planeacion</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto" id="sidebar-menu">
+              <li>
+                <a href="{% url 'planeaciones' %}" class="nav-link text-white" id="dash">
+                  <i class="bi bi-clipboard-check me-2"></i>
+                  Ordenes
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'clientes' %}" class="nav-link text-white" id="clientes">
+                  <i class="bi bi-people me-2"></i>
+                  Clientes
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'productos' %}" class="nav-link text-white" id="productos">
+                  <i class="bi bi-bag me-2"></i>
+                  Productos
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'pedidos' %}" class="nav-link text-white" id="pedidos">
+                  <i class="bi bi-airplane me-2"></i>
+                  Pedidos
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-10 pt-4 p-5">
+          {% block main_content %}
+
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+
+    {% block modals %}
+    {% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+    {% block scripts %}
+    {% endblock %}
+  </body>
+</html>
